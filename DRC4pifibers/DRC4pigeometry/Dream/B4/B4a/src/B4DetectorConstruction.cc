@@ -203,7 +203,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 	G4double worldZ = 10*m;
 
     // Get materials for vacuum, absorber, scintillating and cherenkov fibers, SiPM
-    G4Material* defaultMaterial = G4Material::GetMaterial("G4_Galactic"); // G4_AIR or G4_Galactic
+    G4Material* defaultMaterial = G4Material::GetMaterial("G4_AIR"); // G4_AIR or G4_Galactic
     
     // Building the calorimeter
     
@@ -349,7 +349,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	mpGlass->AddProperty("RINDEX",PhotonEnergy,RefractiveIndex_Glass,nEntries);
     //mpGlass->AddProperty("ABSLENGTH",PhotonEnergy,Glass_AbsLength,nEntries);
     //Glass->SetMaterialPropertiesTable(mpGlass);
-
+    	/* if you want air refractive index
     	G4double RefractiveIndex_Air[nEntries] =
     	{
     		1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
@@ -361,7 +361,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 
     	mpAir = new G4MaterialPropertiesTable();
     	mpAir->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Air, nEntries);
-    	Air->SetMaterialPropertiesTable(mpAir);
+    	Air->SetMaterialPropertiesTable(mpAir);*/
     //default materials of the World
 
     //---Materials for Cerenkov fiber---
@@ -379,8 +379,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	PMTPC_Material = Al;
 
     //--- Photocathod property ---
-    	G4double p_mppc[2] = {2.00*eV, 3.47*eV};
-    	G4double refl_mppc[2] = {0.0, 0.0};
+    /* uncomment if want photocathod properties
+    G4double p_mppc[2] = {2.00*eV, 3.47*eV};
+    G4double refl_mppc[2] = {0.0, 0.0};
     G4double effi_mppc[2] = {0.11, 0.11}; // mimic Quantum Efficiency
     G4double photocath_ReR[] = {1.92, 1.92};
     G4double photocath_ImR[] = {1.69, 1.69};
@@ -391,14 +392,14 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);
-    
+    */
     //Calorimeter parameters
     innerR = 2500; //inner radius /1800
     tower_height = 2000; //tower height 2500
     NbOfBarrel = 40; //(it was 52 before) number of towers in barrel right (left)
     //NbOfEndcap = 47;
     NbOfEndcap = 46; //number of towers in endcap
-    NbOfZRot = 16; //283 //number of Z to round around the center
+    NbOfZRot = 256; //283 //number of Z to round around the center
     //PMTT = 1*mm;
     PMTT = 0*mm; //? giulia, prima =1;
     
@@ -439,7 +440,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     //creating fibers solids
     G4cout << "r_clad= " << clad_C_rMax << " r_coreC=" << core_C_rMax << " r_coreS=" << core_S_rMax << G4endl;
-    fiber = new G4Tubs("fiber",0,clad_C_rMax,tower_height/2.,0*deg,360.*deg);// S is the same
+    fiber = new G4Tubs("Fiber",0,clad_C_rMax,tower_height/2.,0*deg,360.*deg);// S is the same
     fiberC = new G4Tubs("fiberC",0,core_C_rMax,tower_height/2.,0*deg,360.*deg);
     fiberS = new G4Tubs("fiberS",0,core_S_rMax,tower_height/2.,0*deg,360.*deg);
     
@@ -451,7 +452,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     for(int length=1;length<=tower_height;length++){ //from 1 to 20000
         double half=0.5*length; //half to build objects with proper dimensions
         char name[80];
-        sprintf(name,"fiber%d",length);
+        sprintf(name,"Fiber%d",length);
         fiber = new G4Tubs(name,0,clad_C_rMax,half,0*deg,360.*deg); //creating fibers G4Tubs
         sprintf(name,"fiberC%d",length);
         fiberC = new G4Tubs(name,0,core_C_rMax,half,0*deg,360.*deg);
@@ -474,8 +475,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         fiberSLog[length]->SetVisAttributes(visAttrS);
         G4LogicalVolume* fiberCoreCLog = new G4LogicalVolume(fiberC,core_C_Material,"fiberCoreC");
         G4LogicalVolume* fiberCoreSLog = new G4LogicalVolume(fiberS,core_S_Material,"fiberCoreS");
-        // new G4PVPlacement(0,G4ThreeVector(0,0,0),fiberCoreCLog,"fiberCoreCherePhys",fiberCLog[length],false,0,fCheckOverlaps);
-        //new G4PVPlacement(0,G4ThreeVector(0,0,0),fiberCoreSLog,"fiberCoreScintPhys",fiberSLog[length],false,0,fCheckOverlaps);
+        new G4PVPlacement(0,G4ThreeVector(0,0,0),fiberCoreCLog,"fiberCoreCherePhys",fiberCLog[length],false,0,fCheckOverlaps);
+        new G4PVPlacement(0,G4ThreeVector(0,0,0),fiberCoreSLog,"fiberCoreScintPhys",fiberSLog[length],false,0,fCheckOverlaps);
         /*if(sd){
          fiberCoreCLog->SetSensitiveDetector(sd);
          fiberCoreSLog->SetSensitiveDetector(sd);
@@ -554,17 +555,17 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         //endcap right
         //new G4PVPlacement(rmER,G4ThreeVector(rEC*cos(thetaB+0.5*thetaE)*cos(j*phi_unit),rEC*cos(thetaB+0.5*thetaE)*sin(j*phi_unit),rEC*sin(thetaB+0.5*thetaE)),
         //    phiERLog,"phiERPhys",worldLV,false,j,fCheckOverlaps);
-    	new G4PVPlacement(rmER,G4ThreeVector(rEC*cos(thetaB+0.5*thetaE)*cos(j*phi_unit),rEC*cos(thetaB+0.5*thetaE)*sin(j*phi_unit),rEC*sin(thetaB+0.5*thetaE)),
-    		phiERLog,"phiERPhys",worldLV,false,j,fCheckOverlaps);
+    	//new G4PVPlacement(rmER,G4ThreeVector(rEC*cos(thetaB+0.5*thetaE)*cos(j*phi_unit),rEC*cos(thetaB+0.5*thetaE)*sin(j*phi_unit),rEC*sin(thetaB+0.5*thetaE)),
+    	//	phiERLog,"phiERPhys",worldLV,false,j,fCheckOverlaps);
     	G4RotationMatrix* rmEL = new G4RotationMatrix();
     	rmEL->rotateZ(M_PI/2.);
     	rmEL->rotateZ(-j*phi_unit);
     	rmEL->rotateX(0.5*M_PI+thetaB+0.5*thetaE);
-    	new G4PVPlacement(rmEL,G4ThreeVector(rEC*cos(thetaB+0.5*thetaE)*cos(j*phi_unit),rEC*cos(thetaB+0.5*thetaE)*sin(j*phi_unit),-rEC*sin(thetaB+0.5*thetaE)),
-    		phiELLog,"phiELPhys",worldLV,false,j,fCheckOverlaps);
-    }
+    	//new G4PVPlacement(rmEL,G4ThreeVector(rEC*cos(thetaB+0.5*thetaE)*cos(j*phi_unit),rEC*cos(thetaB+0.5*thetaE)*sin(j*phi_unit),-rEC*sin(thetaB+0.5*thetaE)),
+    	//	phiELLog,"phiELPhys",worldLV,false,j,fCheckOverlaps);
+    }//end of ZRotLoop
     G4VisAttributes* phiVisAttr = new G4VisAttributes(G4Colour(0.8,0.8,0.8,0.3));
-    phiVisAttr->SetVisibility(true);
+    phiVisAttr->SetVisibility(true); //vis attr 
     phiBLog->SetVisAttributes(phiVisAttr);
     phiERLog->SetVisAttributes(phiVisAttr);
     phiELLog->SetVisAttributes(phiVisAttr);
@@ -572,7 +573,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     G4VisAttributes* towerVisAttr = new G4VisAttributes(G4Colour(1.0,1.0,0.0));
     towerVisAttr->SetVisibility(true);
-    towerVisAttr->SetDaughtersInvisible(false);
+    towerVisAttr->SetDaughtersInvisible(false); 
     towerVisAttr->SetForceWireframe(true);
     
     G4VisAttributes* PMTVisAttr = new G4VisAttributes(G4Colour(0.3,0.6,0.0));
@@ -621,7 +622,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         //G4cout << c << G4endl;
     	G4ThreeVector c_new(c.getY(),-c.getZ(),c.getX()-(innerR+0.5*length));
         //placing towers in barrel R
-    	new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiBLog,false,volnum,fCheckOverlaps);
+    	new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiBLog,false,i);
         //made by me for new barrel structure
         //if (i>4) new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiB2Log,false,volnum,fCheckOverlaps);
     	sprintf(name,"PMT%d",volnum);
@@ -634,16 +635,17 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
         //VERY IMPORTANT TO PLACE FIBERS
-        //fiberBR(i,deltatheta_barrel[i]); //where fiberBR is defined?
-    	G4cout<<"onefiberfromcenter2"<<G4endl;
-        //    dimB->Getpt_PMTCath(pt);
-        //pmtcath = new G4Trap("PMTCathBR",pt);
-        //    PMTCathLogicalBR[i] = new G4LogicalVolume(pmtcath,Al,name);
+        fiberBR(i,deltatheta_barrel[i]); //where fiberBR is defined?
+    	//G4cout<<"onefiberfromcenter2"<<G4endl;
+         // dimB->Getpt_PMTCath(pt);
+       	//pmtcath = new G4Trap("PMTCathBR",pt);
+        //PMTCathLogicalBR[i] = new G4LogicalVolume(pmtcath,Al,name);
         //new G4PVPlacement(0,G4ThreeVector(0,0,1.5*PMTT/2.-PMTT/4.),PMTCathLogicalBR[i],name,PMTGLogicalBR[i],false,0,fCheckOverlaps);
         //new G4LogicalSkinSurface("Photocath_surf",PMTCathLogicalBR[i],photocath_opsurf);
-        //}//
+        
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
+    	//G4cout<<volnum<<" "<<name<<G4endl;
     }
     
     // barrel L
@@ -675,7 +677,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         //rm.rotateX(-thetaofcenter);
     	G4ThreeVector c = dimB->GetOrigin(0);
     	G4ThreeVector c_new(c.getY(),-c.getZ(),c.getX()-(innerR+0.5*length));
-    	new G4PVPlacement(rm,c_new,towerLogicalBL[i],name,phiBLog,false,volnum,fCheckOverlaps);
+    	new G4PVPlacement(rm,c_new,towerLogicalBL[i],name,phiBLog,false,-100);
         //new G4PVPlacement(dimB->GetRM(0),dimB->GetOrigin_PMTG(0),PMTGLogicalBL[i],name,phiDivLog,false,i,checkOverlaps);
     	//for(int j=0;j<NbOfZRot;j++){
             //for(int j=0;j<1;j++){
@@ -685,7 +687,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
         //VERY IMPORTANT TO PLACE FIBERS
-    	//fiberBL(i,deltatheta_barrel[i]);
+    	fiberBL(i,deltatheta_barrel[i]);
 
         //dimB->Getpt_PMTCath(pt);
         //pmtcath = new G4Trap("PMTCathBL",pt);
@@ -747,7 +749,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	double x = r*sin(thetaB+0.5*thetaE-thetaofcenter);
     	double z = r*cos(thetaB+0.5*thetaE-thetaofcenter)-rEC;
     	G4ThreeVector c_new(c.getY(),x,z);
-        new G4PVPlacement(rm,c_new,towerLogicalER[i],name,phiERLog,false,volnum,fCheckOverlaps);
+        //new G4PVPlacement(rm,c_new,towerLogicalER[i],name,phiERLog,false,volnum,fCheckOverlaps);
     	//for(int j=0;j<NbOfZRot;j++){
             //for(int j=0;j<1;j++){
             //new G4PVPlacement(dimE->GetRM(j),dimE->GetOrigin(j),towerLogicalER[i],name,worldLogical,false,j,checkOverlaps);
@@ -797,7 +799,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	double x = r*sin(thetaofcenter-thetaB-0.5*thetaE);
     	double z = r*cos(thetaofcenter-thetaB-0.5*thetaE)-rEC;
     	G4ThreeVector c_new(c.getY(),x,z);
-        if (i==9) new G4PVPlacement(rm,c_new,towerLogicalEL[i],name,phiELLog,false,volnum,fCheckOverlaps);
+        //if (i==9) new G4PVPlacement(rm,c_new,towerLogicalEL[i],name,phiELLog,false,volnum,fCheckOverlaps);
     	//for(int j=0;j<NbOfZRot;j++){
     	//	for(int j=0;j<1;j++){}
             //new G4PVPlacement(dimE->GetRM(j),dimE->GetOrigin(j),towerLogicalEL[i],name,worldLogical,false,j,fCheckOverlaps);}
@@ -805,7 +807,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	//}
 
     dimE->Getpt(pt);
-    fiberEL(i,lastdeltatheta);
+    //fiberEL(i,lastdeltatheta);
 
         //dimE->Getpt_PMTCath(pt);
         //pmtcath = new G4Trap("PMTCathEL",pt);
@@ -1047,19 +1049,19 @@ void B4DetectorConstruction::fiberBR(G4int i,G4double deltatheta_){
     		TrapSidePlane plane = tower->GetSidePlane(ip);
     		double zpoint = (-plane.a*center_x_BR.at(j)-plane.b*center_y_BR.at(j)-plane.d)/plane.c;
     		outside = (tower->Inside(G4ThreeVector(center_x_BR.at(j),center_y_BR.at(j),zpoint))==kOutside);
-    		G4cout << ip << ": " << plane.a << " " << plane.b << " " << plane.c << " " << plane.d << " " << outside << G4endl;
+    		//G4cout << ip << ": " << plane.a << " " << plane.b << " " << plane.c << " " << plane.d << " " << outside << G4endl;
     		if(!outside){
     			G4ThreeVector normal = tower->SurfaceNormal(G4ThreeVector(center_x_BR.at(j),center_y_BR.at(j),zpoint));
     			double angle = normal.angle(G4ThreeVector(0,0,-1));
     			double shift = fabs(clad_C_rMax/tan(0.5*M_PI-angle));
     			int length = z - zpoint - shift;
-    			G4cout << length << G4endl;
+    			//G4cout << length << G4endl;
     			if(length>=1&&length<=2*z){
     				new G4PVPlacement(0,G4ThreeVector(center_x_BR.at(j),center_y_BR.at(j),z-0.5*length),
     					(bool_cfiber_BR.at(j)==0)?fiberCLog[length]:fiberSLog[length],name,towerLogicalBR[i],false,j,false);
 
     			}
-    			G4cout << G4ThreeVector(center_x_BR.at(j),center_y_BR.at(j),zpoint) << " " << length << " " << shift << " " << angle << G4endl;
+    			//G4cout << G4ThreeVector(center_x_BR.at(j),center_y_BR.at(j),zpoint) << " " << length << " " << shift << " " << angle << G4endl;
     			break;
     		}
     	}

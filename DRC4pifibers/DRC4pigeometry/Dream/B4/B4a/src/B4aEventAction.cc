@@ -83,7 +83,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
   }
   PrimaryParticleEnergy = 0;  
   for(int i=0;i<322624;i++){
-    if(VectorSignals.size() < 322624){
+    if(VectorSignals.size() < 256*40){
   VectorSignals.push_back(0.);}}
   //VectorSignals.at(i)=0;}
   for(int k=0;k<322624;k++){
