@@ -622,7 +622,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         //G4cout << c << G4endl;
     	G4ThreeVector c_new(c.getY(),-c.getZ(),c.getX()-(innerR+0.5*length));
         //placing towers in barrel R
-    	new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiBLog,false,i);
+    	new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiBLog,false,i,false);
         //made by me for new barrel structure
         //if (i>4) new G4PVPlacement(rm,c_new,towerLogicalBR[i],name,phiB2Log,false,volnum,fCheckOverlaps);
     	sprintf(name,"PMT%d",volnum);

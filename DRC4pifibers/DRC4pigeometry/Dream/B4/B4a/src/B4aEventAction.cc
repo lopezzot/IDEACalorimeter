@@ -82,7 +82,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
   VectorSignalsCher.at(i)=0.;
   }
   PrimaryParticleEnergy = 0;  
-  for(int i=0;i<322624;i++){
+  for(int i=0;i<10240;i++){
     if(VectorSignals.size() < 256*40){
   VectorSignals.push_back(0.);}}
   //VectorSignals.at(i)=0;}
@@ -108,7 +108,6 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   //analysisManager->FillH1(3, EnergyScin);
   
   
-
   // fill ntuple event by event
   analysisManager->FillNtupleDColumn(0, Energyem);
   analysisManager->FillNtupleDColumn(1, EnergyScin);
